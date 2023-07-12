@@ -3,7 +3,7 @@ Defines a functions for training a NN.
 """
 
 from data_generator import AudioGenerator
-import _pickle as pickle
+import pickle as pickle
 
 from keras import backend as K
 from keras.models import Model
