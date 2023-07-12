@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras.models import Model
 from keras.layers import (BatchNormalization, Conv1D, Dense, Input, 
-    TimeDistributed, Activation, Bidirectional, SimpleRNN, GRU, LSTM)
+    TimeDistributed, Activation, Bidirectional, SimpleRNN, GRU, LSTM, MaxPooling1D, LSTM, Dropout)
 
 def simple_rnn_model(input_dim, output_dim=29):
     """ Build a recurrent network for speech 
@@ -138,14 +138,14 @@ def bidirectional_rnn_model(input_dim, units, output_dim=29):
     print(model.summary())
     return model
 
-def final_model():
+def final_model(input_dim, units, filters, kernel_size, conv_stride, conv_border_mode, output_dim, recur_layers, dropout, recur_dropout):
     """ Build a deep network for speech 
     """
     # Main acoustic input
     input_data = Input(name='the_input', shape=(None, input_dim))
     
     # TODO: Specify the layers in your network
-     # Add convolutional layer
+    # Add convolutional layer
     conv_1d = Conv1D(filters, kernel_size, 
                      strides=conv_stride, 
                      padding=conv_border_mode,
@@ -153,18 +153,14 @@ def final_model():
                      name='conv1d')(input_data)
     # Add batch normalization
     bn_cnn = BatchNormalization(name='bn_conv_1d')(conv_1d)
-    # Add a Maxpooling layer
-    max_1d = MaxPooling1D(pool_size=kernel_size, strides=1, padding='same', name='maxpool_1d')(bn_cnn)
-    # Add a recurrent layer
-    bidir_rnn = Bidirectional(GRU(units, activation='relu', return_sequences=True, implementation=2, name='bidirectional_rnn'), merge_mode='concat')(max_1d)
-    # Add batch normalization
-    bn_rnn = BatchNormalization()(bidir_rnn)
-    # Add a TimeDistributed(Dense(output_dim)) layer
-    time_dense = TimeDistributed(Dense(output_dim))(bn_rnn)
+    rnn_input = bn_cnn
+    for i in range(recur_layers):
+        rnn = Bidirectional(GRU(units, activation='relu', return_sequences=True, name=f'gru_{i+1}', dropout=dropout, recurrent_dropout=recur_dropout))(rnn_input)
+        rnn_input = BatchNormalization()(rnn)
+    time_dense = TimeDistributed(Dense(output_dim))(rnn_input)
     
     # TODO: Add softmax activation layer
-    y_pred = y_pred = Activation('softmax', name='softmax')(time_dense)
-    
+    y_pred = Activation('softmax', name='softmax')(time_dense)
     # Specify the model
     model = Model(inputs=input_data, outputs=y_pred)
     

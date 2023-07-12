@@ -72,9 +72,12 @@ def train_model(input_to_softmax,
     checkpointer = ModelCheckpoint(filepath='results/'+save_model_path, verbose=0)
 
     # train the model
-    hist = model.fit_generator(generator=audio_gen.next_train(), steps_per_epoch=steps_per_epoch,
-        epochs=epochs, validation_data=audio_gen.next_valid(), validation_steps=validation_steps,
-        callbacks=[checkpointer], verbose=verbose)
+    train_generator = audio_gen.next_train()
+    valid_generator = audio_gen.next_valid()
+
+    hist = model.fit_generator(generator=train_generator, steps_per_epoch=steps_per_epoch,
+                           epochs=epochs, validation_data=valid_generator, validation_steps=validation_steps,
+                           callbacks=[checkpointer], verbose=verbose)
 
     # save model loss
     with open('results/'+pickle_path, 'wb') as f:
