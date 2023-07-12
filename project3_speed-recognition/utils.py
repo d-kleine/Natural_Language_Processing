@@ -99,7 +99,7 @@ def spectrogram_from_file(filename, step=10, window=20, max_freq=None,
             [0, max_freq] are returned
         eps (float): Small value to ensure numerical stability (for ln(x))
     """
-    with soundfile.SoundFile(filename) as sound_file:
+    with soundfile.SoundFile('./'+filename) as sound_file:
         audio = sound_file.read(dtype='float32')
         sample_rate = sound_file.samplerate
         if audio.ndim >= 2:

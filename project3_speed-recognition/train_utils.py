@@ -8,9 +8,10 @@ import _pickle as pickle
 from keras import backend as K
 from keras.models import Model
 from keras.layers import (Input, Lambda)
-from keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint   
 import os
+import tensorflow as tf
 
 def ctc_lambda_func(args):
     y_pred, labels, input_length, label_length = args
@@ -37,7 +38,7 @@ def train_model(input_to_softmax,
                 minibatch_size=20,
                 spectrogram=True,
                 mfcc_dim=13,
-                optimizer=SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5),
+                optimizer=SGD(learning_rate=0.02, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5),
                 epochs=20,
                 verbose=1,
                 sort_by_duration=False,
